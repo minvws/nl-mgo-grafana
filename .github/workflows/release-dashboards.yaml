@@ -1,0 +1,31 @@
+name: Release Dashboards
+
+on:
+    push:
+        tags:
+            - v*
+
+jobs:
+    publish:
+        runs-on: ubuntu-22.04
+
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+
+            - name: Extract version from tag
+              run: echo RELEASE_VERSION=$GITHUB_REF_NAME >> $GITHUB_ENV
+
+            - name: Create artifact
+              run: tar -zcvf /tmp/mgo-grafana_${{ env.RELEASE_VERSION }}.tar.gz ./
+              working-directory: src
+
+            - name: Upload artifact
+              uses: actions/upload-artifact@v4
+              with:
+                  name: mgo-grafana_${{ env.RELEASE_VERSION }}
+                  path: /tmp/mgo-grafana_${{ env.RELEASE_VERSION }}.tar.gz
+                  if-no-files-found: error
+
+            - name: Remove tmp file
+              run: rm /tmp/mgo-grafana_${{ env.RELEASE_VERSION }}.tar.gz
